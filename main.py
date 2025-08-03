@@ -58,7 +58,7 @@ async def query_fallback_ai(question: str, documents: List[Dict]) -> str:
     # Fallback: OpenRouter
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "HTTP-Referer": "http://localhost",
+        "HTTP-Referer": "https://rag-llm-system.onrender.com",
         "X-Title": "DocAnalyzer Assistant"
     }
     try:
