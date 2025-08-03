@@ -7,4 +7,5 @@ pytesseract
 pillow
 pandas
 python-multipart
+pinecone
 google-generativeai
