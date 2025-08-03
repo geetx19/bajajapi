@@ -106,6 +106,9 @@ async def hackrx_run(request: HackRxRequest):
 
     return {"answers": results}
 # -------------------------- Terminal Mode --------------------------
+@app.get("/")
+def read_root():
+    return {"status": "API is running"}
 
 def ask_terminal():
     print("Ask anything about your documents (type 'exit' to quit):")
