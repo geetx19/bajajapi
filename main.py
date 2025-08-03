@@ -15,7 +15,7 @@ from typing import List
 class HackRxRequest(BaseModel):
     documents: str
     questions: List[str]
-
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 INPUT_FOLDER = os.getenv("INPUT_FOLDER","./input")
@@ -56,14 +56,15 @@ async def query_fallback_ai(question: str, documents: List[Dict]) -> str:
         print(f"Gemini (Google SDK) failed: {e}")
 
     # Fallback: OpenRouter
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "HTTP-Referer": "https://rag-llm-system.onrender.com",
-        "X-Title": "DocAnalyzer Assistant"
-    }
+        # Fallback: Groq API
     try:
+        groq_headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
         body = {
-            "model": "meta-llama/llama-3-8b-instruct",
+            "model": "meta-llama/llama-4-scout-17b-16e-instruct",  # Or "llama3-70b-8192" or another Groq-supported model
             "messages": [
                 {"role": "system", "content": "You are a helpful document assistant."},
                 {"role": "user", "content": prompt}
@@ -71,14 +72,22 @@ async def query_fallback_ai(question: str, documents: List[Dict]) -> str:
             "temperature": 0.3,
             "max_tokens": 800
         }
-        async with httpx.AsyncClient() as client:
-            resp = await client.post("https://openrouter.ai/api/v1/chat/completions", json=body, headers=headers)
-            resp.raise_for_status()
-            return resp.json()['choices'][0]['message']['content'].strip()
-    except Exception as e:
-        print(f"LLaMA via OpenRouter failed: {e}")
 
-    return "Error: All model fallbacks failed."
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers=groq_headers,
+                json=body
+            )
+            response.raise_for_status()
+            return response.json()["choices"][0]["message"]["content"].strip()
+
+    except httpx.HTTPStatusError as e:
+        print(f"Groq HTTP error {e.response.status_code}: {e.response.text}")
+    except httpx.RequestError as e:
+        print(f"Groq request error: {e}")
+    except Exception as e:
+        print(f"Groq unexpected error: {e}")
 
 # -------------------------- FastAPI Endpoints --------------------------
 
