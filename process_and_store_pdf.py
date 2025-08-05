@@ -25,14 +25,13 @@ if not pc.has_index(index_name):
 
 index = pc.Index(index_name)
 
-# Function to extract text
+import fitz  # PyMuPDF
+
 def extract_text_from_pdf(pdf_path: str) -> str:
     text = ""
-    with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
+    with fitz.open(pdf_path) as doc:
+        for page in doc:
+            text += page.get_text() + "\n"
     return text
 
 # Chunking helper
@@ -80,7 +79,7 @@ def query_pinecone(query_text: str, top_k: int = 5):
     # Step 2: Query the Pinecone index
     result = index.query(
         vector=query_embedding,
-        top_k=top_k,
+        top_k=1,
         include_metadata=True  # So we get the chunk text & source info
     )
     doc = []

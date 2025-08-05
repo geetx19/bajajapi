@@ -36,26 +36,18 @@ PROCESSED_DOCS: List[Dict] = [{
 
 # -------------------------- Query Handler --------------------------
 
-async def query_fallback_ai(question: str, documents: List[Dict]) -> str:
-    doc = query_pinecone(question)
-    context = "\n\n==========\n\n".join(
-        f"Relevant Context, Rank {i} : {d}\n" for i,d in enumerate(doc)
-    )
+async def query_fallback_ai(questions: List[str], documents: List[Dict]) -> str:
+    doc = ""
+    for question in questions:
+        doc = doc + "".join(query_pinecone(question))
+    context =  f"Relevant Context, : {doc}\n" 
+    
     prompt = (
          "You are a helpful AI assistant trained on the following policy documents.\n"
-          f"User Question: \"{question}\"\n\n"
+          f"User Question: \"{"".join(questions)}\"\n\n"
           f"Relevant Context:\n{context}\n\n"
           "Please answer the user's question **in one clear, complete, and concise sentence**, using the policy context provided. Include relevant statistics from the documents along with numerical figures wherever possible"
           "If the answer is not found in the context, respond with 'Information not available in the provided documents.'")
-
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        return response.text.strip()
-    except Exception as e:
-        print(f"Gemini (Google SDK) failed: {e}")
-
-    # Fallback: OpenRouter
         # Fallback: Groq API
     try:
         groq_headers = {
@@ -109,9 +101,9 @@ async def hackrx_run(request: HackRxRequest):
     folder =  [os.path.join(INPUT_FOLDER,f) for f in os.listdir(INPUT_FOLDER) if os.path.isfile(os.path.join(INPUT_FOLDER,f))]
     store_pdf_in_pinecone(folder[0])
     results = []
-    for question in request.questions:
-        answer = await query_fallback_ai(question,PROCESSED_DOCS)
-        results.append(answer)
+    
+    answer = await query_fallback_ai(request.questions,PROCESSED_DOCS)
+    results.append(answer)
 
     return {"answers": results}
 # -------------------------- Terminal Mode --------------------------
