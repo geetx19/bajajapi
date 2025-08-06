@@ -9,3 +9,4 @@ pandas
 python-multipart
 pinecone
 google-generativeai
+pymupdf
