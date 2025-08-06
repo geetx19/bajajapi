@@ -107,7 +107,8 @@ async def hackrx_run(request: HackRxRequest):
     chunks = re.split(r'\n?\d+\.\s.*?\n', results[0])
 
 # Step 2: Remove any empty chunks and leading newline artifacts
-    answers = [chunk.strip() for chunk in chunks if chunk.strip()]
+    answers = [chunk.strip().replace('\n-', ' ') for chunk in chunks if chunk.strip()]
+
     answers.pop(0)
     return {"answers": answers}
 # -------------------------- Terminal Mode --------------------------
