@@ -41,20 +41,23 @@ async def query_fallback_ai(questions: List[str], documents: List[Dict]) -> str:
     for question in questions:
         doc = doc + "".join(query_pinecone(question))
     context =  f"Relevant Context, : {doc}\n" 
-    
     prompt = (
-         "You are a helpful AI assistant trained on the following policy documents.\n"
-          f"User Question: \"{"".join(questions)}\"\n\n"
-          f"Relevant Context:\n{context}\n\n"
-          "Please answer the user's question **in one clear, complete, and concise sentence**, using the policy context provided. Include relevant statistics from the documents along with numerical figures wherever possible"
-            "Give the answer in precise one line and add the statistics or numerical measures mentioned in the document"
-            "For example structure the answers in the following Format : 
-            "What is the grace period for premium payment under the National Parivar Mediclaim Plus Policy?"
-            "What is the waiting period for pre-existing diseases (PED) to be covered?" 
-          "A grace period of thirty days is provided for premium payment after the due date to renew or continue the policy without losing continuity benefits."
-        "There is a waiting period of thirty-six (36) months of continuous coverage from the first policy inception for pre-existing diseases and their direct complications to be covered."
-        "Yes, the policy covers maternity expenses, including childbirth and lawful medical termination of pregnancy. To be eligible, the female insured person must have been continuously covered for at least 24 months. The benefit is limited to two deliveries or terminations during the policy period."
-          "If the answer is not found in the context, respond with 'Information not available in the provided documents.'")
+    "You are a helpful AI assistant trained on the following policy documents.\n\n"
+    f"User Question: \"{"".join(questions)}\"\n\n"
+    f"Relevant Context:\n{context}\n\n"
+    "Please answer the user's question **in one clear, complete, and concise sentence**, using the policy context provided. "
+    "Include relevant statistics from the documents along with numerical figures wherever possible. "
+    "Give the answer in a precise one-liner and include the statistics or numerical measures mentioned in the document.\n\n"
+    "📌 Example Answer Format:\n"
+    "\"What is the grace period for premium payment under the National Parivar Mediclaim Plus Policy?\"\n"
+    "➡️ A grace period of thirty days is provided for premium payment after the due date to renew or continue the policy without losing continuity benefits.\n\n"
+    "\"What is the waiting period for pre-existing diseases (PED) to be covered?\"\n"
+    "➡️ There is a waiting period of thirty-six (36) months of continuous coverage from the first policy inception for pre-existing diseases and their direct complications to be covered.\n\n"
+    "\"Does the policy cover maternity expenses?\"\n"
+    "➡️ Yes, the policy covers maternity expenses including childbirth and lawful medical termination of pregnancy, with a waiting period of 24 months and a limit of two claims.\n\n"
+    "If the answer is not found in the context, respond with: 'Information not available in the provided documents.'"
+)
+
         # Fallback: Groq API
     try:
         groq_headers = {
