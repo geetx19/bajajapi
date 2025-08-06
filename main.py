@@ -108,7 +108,7 @@ async def hackrx_run(request: HackRxRequest):
 
 # Step 2: Remove any empty chunks and leading newline artifacts
     answers = [chunk.strip() for chunk in chunks if chunk.strip()]
-    answer.pop(0)
+    answers.pop(0)
     return {"answers": answers}
 # -------------------------- Terminal Mode --------------------------
 @app.get("/")
