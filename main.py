@@ -11,7 +11,7 @@ from download_pdf import download_pdf_file
 load_dotenv()
 from pydantic import BaseModel
 from typing import List
-
+import re
 class HackRxRequest(BaseModel):
     documents: str
     questions: List[str]
@@ -104,8 +104,12 @@ async def hackrx_run(request: HackRxRequest):
     
     answer = await query_fallback_ai(request.questions,PROCESSED_DOCS)
     results.append(answer)
+    chunks = re.split(r'\n?\d+\.\s.*?\n', results[0])
 
-    return {"answers": results}
+# Step 2: Remove any empty chunks and leading newline artifacts
+    answers = [chunk.strip() for chunk in chunks if chunk.strip()]
+
+    return {"answers": answers}
 # -------------------------- Terminal Mode --------------------------
 @app.get("/")
 def read_root():
